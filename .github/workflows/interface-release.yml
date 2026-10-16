@@ -12,11 +12,11 @@ permissions:
   contents: read
 
 concurrency:
-  group: restorewin-interface-v0.2.0
+  group: restorewin-interface-v0.2.0-preview.2
   cancel-in-progress: false
 
 env:
-  RELEASE_TAG: interface-v0.2.0
+  RELEASE_TAG: interface-v0.2.0-preview.2
   ELECTRON_BUILDER_COMPRESSION_LEVEL: 1
 
 jobs:
@@ -40,7 +40,7 @@ jobs:
       - name: Obter o código da versão
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          ref: interface-v0.2.0
+          ref: interface-v0.2.0-preview.2
           persist-credentials: false
       - name: Preparar Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
@@ -65,7 +65,26 @@ jobs:
         run: xvfb-run --auto-servernum npm run test:ui
       - name: Testar autenticação e segundo plano no Windows
         if: runner.os == 'Windows'
-        run: npm run test:ui -- --grep 'authentication|background' --timeout=90000
+        run: node node_modules/@playwright/test/cli.js test --grep 'authentication|background' --timeout=90000
+      - name: Registrar falhas de interface nas anotações
+        if: failure()
+        run: |
+          node --input-type=module <<'JS'
+          import { readFileSync } from 'node:fs';
+          const escape = (s) => s.replace(/%/g, '%25').replace(/\r/g, '%0D').replace(/\n/g, '%0A');
+          try {
+            const report = JSON.parse(readFileSync('test-results/results.json', 'utf8'));
+            function walk(suite) {
+              for (const spec of suite.specs ?? []) for (const test of spec.tests ?? []) for (const result of test.results ?? []) {
+                if (result.status === 'passed') continue;
+                for (const error of result.errors ?? []) console.log('::error title=Teste Electron::' + escape(spec.title + '\n' + (error.message ?? 'Falha sem mensagem').replace(/\x1b\[[0-9;]*m/g, '').slice(0, 5000)));
+              }
+              for (const child of suite.suites ?? []) walk(child);
+            }
+            for (const suite of report.suites ?? []) walk(suite);
+            for (const error of report.errors ?? []) console.log('::error title=Playwright::' + escape((error.message ?? 'Falha global').slice(0, 5000)));
+          } catch (e) { console.log('::error title=Relatório Electron::Não foi produzido um relatório JSON de testes de interface. ' + escape(e.message)); }
+          JS
       - name: Gerar ZIP e instalador Windows sem publicação automática
         if: runner.os == 'Windows'
         env:
@@ -102,7 +121,7 @@ jobs:
       - name: Obter código da versão
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          ref: interface-v0.2.0
+          ref: interface-v0.2.0-preview.2
           persist-credentials: false
       - name: Reunir pacotes verificados pelos jobs
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
