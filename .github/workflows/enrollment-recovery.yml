@@ -20,6 +20,11 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
-      - name: Validar recusa, simulacao e backup em pastas descartaveis
-        shell: ${{ matrix.shell }}
+      - name: Validar com Windows PowerShell 5.1 em pastas descartaveis
+        if: matrix.shell == 'powershell'
+        shell: powershell
+        run: ./tests/test_enrollment_recovery.ps1
+      - name: Validar com PowerShell 7 em pastas descartaveis
+        if: matrix.shell == 'pwsh'
+        shell: pwsh
         run: ./tests/test_enrollment_recovery.ps1
