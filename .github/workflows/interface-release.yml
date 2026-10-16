@@ -2,8 +2,12 @@ name: Pacotes da interface experimental
 
 on:
   push:
+    branches:
+      - main
     tags:
       - interface-v0.1.0
+    paths:
+      - .github/workflows/interface-release.yml
   workflow_dispatch:
 
 permissions:
