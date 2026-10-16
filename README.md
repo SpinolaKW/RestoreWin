@@ -8,7 +8,7 @@ Os binários proprietários recebidos foram usados para análise estática fora 
 
 ## Downloads da interface
 
-Os pacotes serão disponibilizados na [pré-versão `interface-v0.1.0`](https://github.com/SpinolaKW/RestoreWin/releases/tag/interface-v0.1.0) quando o [workflow de empacotamento](https://github.com/SpinolaKW/RestoreWin/actions/workflows/interface-release.yml) terminar com sucesso. Se não houver arquivos na pré-versão, consulte o resultado do workflow: o link não comprova que uma publicação foi concluída. O código também pode ser baixado pelo botão **Code → Download ZIP** do GitHub.
+Os pacotes serão disponibilizados na [pré-versão `interface-v0.1.0-preview.2`](https://github.com/SpinolaKW/RestoreWin/releases/tag/interface-v0.1.0-preview.2) quando o [workflow de empacotamento](https://github.com/SpinolaKW/RestoreWin/actions/workflows/interface-release.yml) terminar com sucesso. Se não houver arquivos na pré-versão, consulte o resultado do workflow: o link não comprova que uma publicação foi concluída. O código também pode ser baixado pelo botão **Code → Download ZIP** do GitHub.
 
 ![Interface experimental do RestoreWin, com proteção indisponível](docs/images/restorewin-interface-linux.png)
 

@@ -8,6 +8,7 @@ import {
   mkdir,
   writeFile,
   symlink,
+  realpath,
 } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -17,15 +18,17 @@ import { RestoreService } from "../src/main/service";
 import type { Computer, Profile } from "../src/shared/contracts";
 
 async function fixture(t: { after(fn: () => Promise<void>): void }) {
-  const root = await mkdtemp(path.join(os.tmpdir(), "restorewin-desktop-"));
+  const root = await realpath(
+    await mkdtemp(path.join(os.tmpdir(), "restorewin-desktop-")),
+  );
   t.after(() => rm(root, { recursive: true, force: true }));
   const directory = path.join(root, "settings");
   const data = path.join(root, "Documents");
   await mkdir(data);
   const store = new SettingsStore(directory);
   const computer: Computer = {
-    platform: "linux",
-    osName: "Test Linux",
+    platform: process.platform === "win32" ? "windows" : "linux",
+    osName: "Test system",
     osVersion: "test",
     architecture: "x64",
     installationDirectory: root,
@@ -115,7 +118,11 @@ test("missing folders and symlinks are rejected without creating settings", asyn
   p.exclusions[0].path = path.join(f.root, "missing");
   await assert.rejects(f.service.saveProfile(p, 0), { code: "FOLDER_MISSING" });
   const link = path.join(f.root, "linked");
-  await symlink(f.data, link);
+  await symlink(
+    f.data,
+    link,
+    process.platform === "win32" ? "junction" : "dir",
+  );
   p.exclusions[0].path = link;
   await assert.rejects(f.service.saveProfile(p, 0), { code: "FOLDER_LINK" });
   assert.equal((await f.store.load()).revision, 0);
