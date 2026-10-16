@@ -1,0 +1,25 @@
+name: Recuperacao manual do cadastro
+on:
+  push:
+    branches: [main]
+    paths:
+      - tools/Reset-RestoreWinEnrollment.ps1
+      - tests/test_enrollment_recovery.ps1
+      - .github/workflows/enrollment-recovery.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  recovery:
+    runs-on: windows-latest
+    timeout-minutes: 5
+    strategy:
+      matrix:
+        shell: [powershell, pwsh]
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Validar recusa, simulacao e backup em pastas descartaveis
+        shell: ${{ matrix.shell }}
+        run: ./tests/test_enrollment_recovery.ps1
