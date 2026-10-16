@@ -1,0 +1,124 @@
+name: Pacotes da interface experimental
+
+on:
+  push:
+    tags:
+      - interface-v0.1.0
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: restorewin-interface-v0.1.0
+  cancel-in-progress: false
+
+env:
+  RELEASE_TAG: interface-v0.1.0
+  ELECTRON_BUILDER_COMPRESSION_LEVEL: 1
+
+jobs:
+  packages:
+    name: Interface ${{ matrix.platform }} x64
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: Windows
+            runner: windows-latest
+          - platform: Linux
+            runner: ubuntu-24.04
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 35
+    defaults:
+      run:
+        working-directory: desktop
+        shell: bash
+    steps:
+      - name: Obter o código da versão
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: interface-v0.1.0
+          persist-credentials: false
+      - name: Preparar Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24.19.0
+          cache: npm
+          cache-dependency-path: desktop/package-lock.json
+      - name: Instalar dependências fixadas
+        run: npm ci --no-audit --no-fund
+      - name: Instalar e verificar runtime Electron
+        run: npm run install:runtime
+      - name: Testar configuração e validações
+        run: npm test
+      - name: Compilar a interface
+        run: npm run build
+      - name: Testar núcleo experimental em imagens
+        if: runner.os == 'Linux'
+        working-directory: .
+        run: make test
+      - name: Testar interface Electron no Linux
+        if: runner.os == 'Linux'
+        run: xvfb-run --auto-servernum npm run test:ui
+      - name: Gerar ZIP e instalador Windows sem publicação automática
+        if: runner.os == 'Windows'
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+        run: |
+          npx --no-install electron-builder --win nsis zip --x64 --publish never \
+            --config.win.artifactName='RestoreWin-Interface-${version}-win-${arch}.${ext}'
+      - name: Gerar pacotes Linux sem publicação automática
+        if: runner.os == 'Linux'
+        run: |
+          npx --no-install electron-builder --linux deb tar.gz --x64 --publish never \
+            --config.electronDist=node_modules/electron/dist --config.deb.compression=gz
+      - name: Armazenar somente pacotes completos
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: interface-${{ runner.os }}
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 0
+          path: |
+            desktop/release/RestoreWin-Interface-*.exe
+            desktop/release/RestoreWin-Interface-*.zip
+            desktop/release/RestoreWin-Interface-*.deb
+            desktop/release/RestoreWin-Interface-*.tar.gz
+
+  release:
+    name: Publicar pré-versão da interface
+    needs: packages
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - name: Obter código da versão
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: interface-v0.1.0
+          persist-credentials: false
+      - name: Reunir pacotes verificados pelos jobs
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          pattern: interface-*
+          path: release-assets
+          merge-multiple: true
+      - name: Incluir fonte, imagem e hashes
+        shell: bash
+        run: |
+          git archive --format=zip --prefix=RestoreWin/ --output=release-assets/RestoreWin-0.1.0-fonte.zip HEAD
+          cp docs/images/restorewin-interface-linux.png release-assets/restorewin-interface-linux.png
+          cp docs/releases/interface-v0.1.0.md release-assets/LEIA-ME.md
+          cd release-assets
+          sha256sum RestoreWin-* restorewin-interface-linux.png LEIA-ME.md > SHA256SUMS.txt
+      - name: Publicar os arquivos como pré-versão
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$RELEASE_TAG" release-assets/* \
+            --repo "$GITHUB_REPOSITORY" --verify-tag --prerelease \
+            --title 'RestoreWin 0.1.0 — interface experimental, sem congelamento' \
+            --notes-file docs/releases/interface-v0.1.0.md

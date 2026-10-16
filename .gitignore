@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.venv/
+artifacts/
+desktop/node_modules/
+desktop/build/
+desktop/dist/
+desktop/release/
+desktop/test-results/
+desktop/playwright-report/

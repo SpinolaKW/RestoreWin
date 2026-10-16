@@ -1,0 +1,84 @@
+{
+  "name": "restorewin-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Interface experimental de congelamento e manutenção do RestoreWin",
+  "type": "module",
+  "main": "build/main.cjs",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc --noEmit && vite build && node scripts/build-main.mjs",
+    "test": "tsx --test tests/*.test.ts",
+    "test:ui": "playwright test",
+    "start": "electron .",
+    "package:linux": "npm run build && electron-builder --linux deb tar.gz --x64 --publish never",
+    "package:windows": "npm run build && electron-builder --win nsis --x64 --publish never",
+    "install:runtime": "node node_modules/electron/install.js",
+    "format": "prettier --write src tests e2e scripts *.ts *.json"
+  },
+  "build": {
+    "appId": "com.restorewin.desktop",
+    "productName": "RestoreWin",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "build/**",
+      "dist/**",
+      "package.json"
+    ],
+    "asar": true,
+    "linux": {
+      "target": [
+        "deb",
+        "tar.gz"
+      ],
+      "category": "System",
+      "maintainer": "RestoreWin project",
+      "artifactName": "RestoreWin-Interface-${version}-${arch}.${ext}"
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "artifactName": "RestoreWin-Interface-${version}-setup-${arch}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "perMachine": false,
+      "allowElevation": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  },
+  "dependencies": {
+    "lucide-react": "1.57.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1",
+    "@types/node": "26.6.5",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.2",
+    "electron": "44.7.2",
+    "electron-builder": "26.15.3",
+    "esbuild": "0.28.2",
+    "prettier": "3.9.10",
+    "tsx": "4.23.15",
+    "typescript": "7.0.2",
+    "vite": "8.3.4"
+  },
+  "license": "UNLICENSED",
+  "author": {
+    "name": "RestoreWin project"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SpinolaKW/RestoreWin.git",
+    "directory": "desktop"
+  }
+}
