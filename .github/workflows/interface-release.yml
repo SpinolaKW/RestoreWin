@@ -12,11 +12,11 @@ permissions:
   contents: read
 
 concurrency:
-  group: restorewin-interface-v0.2.0-preview.2
+  group: restorewin-interface-v0.2.0-preview.3
   cancel-in-progress: false
 
 env:
-  RELEASE_TAG: interface-v0.2.0-preview.2
+  RELEASE_TAG: interface-v0.2.0-preview.3
   ELECTRON_BUILDER_COMPRESSION_LEVEL: 1
 
 jobs:
@@ -40,7 +40,7 @@ jobs:
       - name: Obter o código da versão
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          ref: interface-v0.2.0-preview.2
+          ref: interface-v0.2.0-preview.3
           persist-credentials: false
       - name: Preparar Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
@@ -121,7 +121,7 @@ jobs:
       - name: Obter código da versão
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          ref: interface-v0.2.0-preview.2
+          ref: interface-v0.2.0-preview.3
           persist-credentials: false
       - name: Reunir pacotes verificados pelos jobs
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4

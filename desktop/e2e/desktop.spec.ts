@@ -74,7 +74,7 @@ async function launch() {
     page.getByText("O computador ainda não está protegido pelo RestoreWin.", {
       exact: true,
     }),
-  ).toBeVisible();
+  ).toBeVisible({ timeout: 20_000 }); // Windows volume inspection has a 15s timeout.
 }
 
 test.beforeEach(async () => {
