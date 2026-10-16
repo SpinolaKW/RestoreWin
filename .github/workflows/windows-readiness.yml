@@ -1,0 +1,25 @@
+name: Diagnostico Windows somente leitura
+on:
+  push:
+    branches: [main]
+    paths:
+      - tools/Get-RestoreWinReadiness.ps1
+      - tests/test_windows_readiness.ps1
+      - .github/workflows/windows-readiness.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  readiness:
+    runs-on: windows-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: PowerShell 5.1 - classificacao e consultas reais
+        shell: powershell
+        run: ./tests/test_windows_readiness.ps1
+      - name: PowerShell 7 - classificacao e consultas reais
+        shell: pwsh
+        run: ./tests/test_windows_readiness.ps1

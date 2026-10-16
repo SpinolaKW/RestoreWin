@@ -29,6 +29,8 @@ Os testes usam memória com injeção de falhas e arquivos temporários no Linux
 
 ## Decisões para uma integração futura
 
+O [diagnóstico Windows somente de leitura](diagnostico-windows.md) identifica a edição/build e consulta o estado UWF global quando acessível. Ele orienta a escolha entre avaliar UWF nativo e desenvolver o driver próprio para Home/Pro. Nenhum resultado desse diagnóstico habilita proteção ou comprova compatibilidade de boot.
+
 - Preservar o carregador Microsoft e evitar substituir arquivos EFI como estratégia de implementação. A assinatura e o carregamento do filtro de boot ainda precisam ser projetados e validados.
 - Nunca ativar proteção usando geometria, estado do overlay ou identidade da base desconhecidos.
 - Nunca retornar silenciosamente à base após falha de metadados e permitir novas gravações em cima de uma visão possivelmente errada.
