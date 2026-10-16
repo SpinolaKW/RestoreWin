@@ -15,6 +15,33 @@
   --border: #e5eaf0;
   --muted: #788597;
 }
+.storage-diagnostic {
+  margin: 16px 0;
+  padding: 14px;
+  border: 1px solid #d7e1e5;
+  border-radius: 8px;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.storage-diagnostic summary {
+  cursor: pointer;
+  font-weight: 650;
+}
+.storage-diagnostic dl {
+  display: grid;
+  grid-template-columns: 75px minmax(0, 1fr);
+  gap: 8px;
+}
+.storage-diagnostic dt {
+  font-weight: 650;
+}
+.storage-diagnostic dd {
+  margin: 0;
+}
+.storage-diagnostic p {
+  margin: 12px 0;
+  line-height: 1.7;
+}
 .access-shell {
   min-height: 100vh;
   display: grid;

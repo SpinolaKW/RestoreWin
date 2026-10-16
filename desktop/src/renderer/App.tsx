@@ -354,7 +354,7 @@ export function App({
             <span>Sobre e compatibilidade</span>
           </button>
           <div className="sidebar-version">
-            RestoreWin <span>v{snapshot?.appVersion ?? "0.2.0"}</span>
+            RestoreWin <span>v{snapshot?.appVersion ?? "0.2.1"}</span>
           </div>
         </div>
       </aside>
@@ -1123,7 +1123,7 @@ export function App({
         <div className="about-logo">
           <Snowflake size={36} />
           <strong>RestoreWin</strong>
-          <span>{snapshot?.appVersion ?? "0.2.0"} · desenvolvimento</span>
+          <span>{snapshot?.appVersion ?? "0.2.1"} · desenvolvimento</span>
         </div>
         <p className="modal-copy">
           Uma implementação própria para restaurar a instalação física do

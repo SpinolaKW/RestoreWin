@@ -5,7 +5,14 @@ import {
   type ElectronApplication,
   type Page,
 } from "@playwright/test";
-import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import {
+  mkdtemp,
+  mkdir,
+  readFile,
+  rm,
+  writeFile,
+  rename,
+} from "node:fs/promises";
 import path from "node:path";
 import { spawn } from "node:child_process";
 
@@ -464,4 +471,52 @@ test("authentication locks on operating-system screen lock and suspension signal
       page.getByRole("heading", { name: "Visão geral", exact: true }),
     ).toBeVisible();
   }
+});
+
+test("authentication reports an unreadable account path at startup and preserves the existing administrator", async () => {
+  await app.close();
+  const accountPath = path.join(directory, "state/accounts.json");
+  const backup = path.join(directory, "state/preserved-accounts.json");
+  const original = await readFile(accountPath, "utf8");
+  await rename(accountPath, backup);
+  await mkdir(accountPath);
+  app = await electron.launch({
+    args: [process.cwd()],
+    env: {
+      ...process.env,
+      RESTOREWIN_STATE_DIR: path.join(directory, "state"),
+    },
+  });
+  page = await app.firstWindow();
+  page.on("pageerror", (error) => pageErrors.push(error.message));
+  await expect(page.getByRole("alert")).toContainText(
+    "Não foi possível ler os usuários",
+  );
+  await expect(
+    page.getByText("Detalhes do armazenamento", { exact: true }),
+  ).toBeVisible();
+  await expect(page.getByText(accountPath, { exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Criar administrador", exact: true }),
+  ).toHaveCount(0);
+  const failed = await page.evaluate(() => window.restorewin!.authState());
+  expect(failed.ok).toBe(false);
+  if (!failed.ok) {
+    expect(failed.code).toBe("ACCOUNTS_UNREADABLE");
+    expect(failed.storage?.path).toBe(accountPath);
+    expect(failed.storage?.nativeCode).toMatch(/^[A-Z0-9_]+$/);
+  }
+  expect(await readFile(backup, "utf8")).toBe(original);
+  await rm(accountPath, { recursive: true });
+  await rename(backup, accountPath);
+  await page
+    .getByRole("button", { name: "Tentar novamente", exact: true })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Entrar no RestoreWin", exact: true }),
+  ).toBeVisible();
+  await signIn();
+  await expect(
+    page.getByRole("heading", { name: "Visão geral", exact: true }),
+  ).toBeVisible();
 });

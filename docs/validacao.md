@@ -1,5 +1,11 @@
 # Validação executada
 
+## Versão 0.2.1: diagnóstico de armazenamento
+
+O conjunto atual tem 14 casos C, 9 Python, 28 Node e 9 Electron (60 distintos). Os novos casos reproduzem erro de leitura antes do cadastro, verificam código/caminho no IPC e na tela, preservação do administrador e revogação da sessão após falha de leitura. Uma causa específica no computador do usuário não foi confirmada só pela captura de tela.
+
+Além de cinco fluxos Electron em Windows, o workflow exige um teste do executável Windows empacotado em um runner descartável, sem `RESTOREWIN_STATE_DIR`, para verificar o primeiro cadastro no diretório padrão de dados e o bloqueio ao fechar. O teste não altera o registro de inicialização automática nem reproduz políticas/permissões da estação afetada. Os conjuntos das versões anteriores abaixo são históricos.
+
 ## Versão 0.2.0: contas e bandeja
 
 O conjunto atual tem 14 casos C, 9 Python, 26 Node e 8 Electron (57 distintos). Os testes de contas verificam primeira inicialização única, persistência sem sessão persistida, hashes/salts, privilégios do administrador, proteção da conta principal, alteração de senha, exclusão de operadores, limite persistente de tentativas e bloqueio concorrente com login. Os testes da interface verificam autorização via IPC, cadastro/login, gerenciamento de usuários, troca da senha principal e novo login.

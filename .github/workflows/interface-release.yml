@@ -12,11 +12,11 @@ permissions:
   contents: read
 
 concurrency:
-  group: restorewin-interface-v0.2.0-preview.3
+  group: restorewin-interface-v0.2.1
   cancel-in-progress: false
 
 env:
-  RELEASE_TAG: interface-v0.2.0-preview.3
+  RELEASE_TAG: interface-v0.2.1
   ELECTRON_BUILDER_COMPRESSION_LEVEL: 1
 
 jobs:
@@ -40,7 +40,7 @@ jobs:
       - name: Obter o código da versão
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          ref: interface-v0.2.0-preview.3
+          ref: interface-v0.2.1
           persist-credentials: false
       - name: Preparar Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
@@ -97,6 +97,9 @@ jobs:
         run: |
           npx --no-install electron-builder --linux deb tar.gz --x64 --publish never \
             --config.electronDist=node_modules/electron/dist --config.deb.compression=gz
+      - name: Verificar cadastro no executável Windows empacotado e diretório padrão
+        if: runner.os == 'Windows'
+        run: node scripts/smoke-packaged-windows.mjs
       - name: Armazenar somente pacotes completos
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
@@ -121,7 +124,7 @@ jobs:
       - name: Obter código da versão
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          ref: interface-v0.2.0-preview.3
+          ref: interface-v0.2.1
           persist-credentials: false
       - name: Reunir pacotes verificados pelos jobs
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
@@ -132,9 +135,9 @@ jobs:
       - name: Incluir fonte, imagem e hashes
         shell: bash
         run: |
-          git archive --format=zip --prefix=RestoreWin/ --output=release-assets/RestoreWin-0.2.0-fonte.zip HEAD
+          git archive --format=zip --prefix=RestoreWin/ --output=release-assets/RestoreWin-0.2.1-fonte.zip HEAD
           cp docs/images/restorewin-*.png release-assets/
-          cp docs/releases/interface-v0.2.0.md release-assets/LEIA-ME.md
+          cp docs/releases/interface-v0.2.1.md release-assets/LEIA-ME.md
           cd release-assets
           sha256sum RestoreWin-* restorewin-*.png LEIA-ME.md > SHA256SUMS.txt
       - name: Publicar os arquivos como pré-versão
@@ -144,5 +147,5 @@ jobs:
         run: |
           gh release create "$RELEASE_TAG" release-assets/* \
             --repo "$GITHUB_REPOSITORY" --verify-tag --prerelease \
-            --title 'RestoreWin 0.2.0 — bandeja e senhas; sem congelamento' \
-            --notes-file docs/releases/interface-v0.2.0.md
+            --title 'RestoreWin 0.2.1 — diagnóstico do cadastro; sem congelamento' \
+            --notes-file docs/releases/interface-v0.2.1.md

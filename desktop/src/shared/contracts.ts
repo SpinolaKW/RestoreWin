@@ -69,6 +69,13 @@ export interface Failure {
   ok: false;
   code: string;
   message: string;
+  storage?: StorageDiagnostic;
+}
+export interface StorageDiagnostic {
+  operation: "read" | "write";
+  nativeCode: string;
+  path: string;
+  guidance: string;
 }
 export type Result<T> = { ok: true; value: T } | Failure;
 export interface User {

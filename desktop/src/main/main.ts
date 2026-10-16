@@ -115,6 +115,9 @@ function register(
           error instanceof AppError
             ? error.message
             : "Não foi possível concluir esta operação.",
+        ...(error instanceof AppError && error.storage
+          ? { storage: error.storage }
+          : {}),
       };
     }
   });

@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { LockKeyhole, Snowflake, ShieldCheck } from "lucide-react";
-import type { AuthState } from "../shared/contracts";
+import type { AuthState, StorageDiagnostic } from "../shared/contracts";
 import { bridge } from "./bridge";
 import { App } from "./App";
 
@@ -12,19 +12,24 @@ export function AuthGate() {
   const [acknowledged, setAcknowledged] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [storage, setStorage] = useState<StorageDiagnostic | null>(null);
+  const [copied, setCopied] = useState("");
   async function refresh() {
     try {
       const result = await bridge.authState();
       if (result.ok) {
         setAuth(result.value);
         setError("");
+        setStorage(null);
       } else {
         setAuth(null);
         setError(result.message);
+        setStorage(result.storage ?? null);
       }
     } catch {
       setAuth(null);
       setError("Não foi possível consultar o controle de acesso.");
+      setStorage(null);
     }
   }
   useEffect(() => {
@@ -55,6 +60,8 @@ export function AuthGate() {
   async function submit(event: FormEvent) {
     event.preventDefault();
     setError("");
+    setStorage(null);
+    setCopied("");
     if (!auth) return;
     if (!auth.initialized && (password !== confirmation || !acknowledged)) {
       setError("Confirme a senha e o aviso de guarda da senha.");
@@ -68,7 +75,10 @@ export function AuthGate() {
       setPassword("");
       setConfirmation("");
       if (result.ok) setAuth(result.value);
-      else setError(result.message);
+      else {
+        setError(result.message);
+        setStorage(result.storage ?? null);
+      }
     } catch {
       setPassword("");
       setConfirmation("");
@@ -123,6 +133,43 @@ export function AuthGate() {
             <div className="notice error" role="alert">
               {error}
             </div>
+          )}
+          {storage && (
+            <details className="storage-diagnostic" open>
+              <summary>Detalhes do armazenamento</summary>
+              <dl>
+                <dt>Código</dt>
+                <dd>{storage.nativeCode}</dd>
+                <dt>Operação</dt>
+                <dd>{storage.operation === "read" ? "Leitura" : "Gravação"}</dd>
+                <dt>Caminho</dt>
+                <dd>
+                  <code>{storage.path}</code>
+                </dd>
+              </dl>
+              <p>{storage.guidance}</p>
+              <p>
+                Este diagnóstico não contém senhas nem o conteúdo do cadastro.
+              </p>
+              <button
+                className="button secondary"
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(
+                      `RestoreWin — diagnóstico de armazenamento\nCódigo: ${storage.nativeCode}\nOperação: ${storage.operation}\nCaminho: ${storage.path}\n${storage.guidance}`,
+                    );
+                    setCopied("Diagnóstico copiado.");
+                  } catch {
+                    setCopied(
+                      "Selecione o código e o caminho acima e copie manualmente.",
+                    );
+                  }
+                }}
+              >
+                Copiar diagnóstico
+              </button>
+              {copied && <p role="status">{copied}</p>}
+            </details>
           )}
           {auth ? (
             <form onSubmit={(e) => void submit(e)}>

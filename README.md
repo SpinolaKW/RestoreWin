@@ -8,11 +8,13 @@ Os binários proprietários recebidos foram usados para análise estática fora 
 
 ## Downloads da interface
 
-Os pacotes serão disponibilizados na [pré-versão `interface-v0.2.0-preview.3`](https://github.com/SpinolaKW/RestoreWin/releases/tag/interface-v0.2.0-preview.3) quando o [workflow de empacotamento](https://github.com/SpinolaKW/RestoreWin/actions/workflows/interface-release.yml) terminar com sucesso. Se não houver arquivos na pré-versão, consulte o resultado do workflow: o link não comprova que uma publicação foi concluída. O código também pode ser baixado pelo botão **Code → Download ZIP** do GitHub.
+Os pacotes serão disponibilizados na [pré-versão `interface-v0.2.1`](https://github.com/SpinolaKW/RestoreWin/releases/tag/interface-v0.2.1) quando o [workflow de empacotamento](https://github.com/SpinolaKW/RestoreWin/actions/workflows/interface-release.yml) terminar com sucesso. Se não houver arquivos na pré-versão, consulte o resultado do workflow: o link não comprova que uma publicação foi concluída. O código também pode ser baixado pelo botão **Code → Download ZIP** do GitHub.
 
 ![Interface experimental do RestoreWin, com proteção indisponível](docs/images/restorewin-interface-linux.png)
 
-Leia os [limites e instruções da pré-versão](docs/releases/interface-v0.2.0.md). A imagem mostra a interface executada no Linux; os downloads não fornecem congelamento real.
+Leia os [limites e instruções da pré-versão](docs/releases/interface-v0.2.1.md). A imagem mostra a interface executada no Linux; os downloads não fornecem congelamento real.
+
+A versão 0.2.1 identifica o código nativo e o caminho das falhas de leitura/gravação do cadastro, sem apagá-lo ou liberar acesso sem validação. Se aparecer **Não foi possível ler os usuários**, use **Copiar diagnóstico** e envie apenas o código/caminho, sem enviar `accounts.json`. Essa atualização melhora o diagnóstico; a causa de uma falha na estação exige verificar o código exibido.
 
 A versão 0.2.0 adiciona [contas, senhas e bandeja](docs/contas-e-bandeja.md). No primeiro acesso, crie o administrador principal; não existe senha padrão ou recuperação automática. Fechar a janela bloqueia a sessão e preserva o processo na bandeja. Os [limites da adaptação dos drivers antigos](docs/revisao-rx33-25h2.md) permanecem: não há congelamento implementado.
 
@@ -34,7 +36,7 @@ O instalador Windows está configurado para permitir escolher a pasta/unidade de
 
 Durante o congelamento desejado, as alterações da sessão deverão funcionar temporariamente e ser descartadas ao reiniciar, preservando pastas permanentes. A manutenção deverá permitir atualizações e preparar uma nova base. Esse comportamento ainda depende dos componentes de sistema.
 
-Os testes incluem 14 C, 9 Python, 26 Node e 8 fluxos Electron (57 casos distintos). Além dos fluxos do perfil, verificam autenticação, conta principal protegida, gerenciamento de operadores, fechamento em segundo plano e reabertura pela segunda instância. O workflow também executa os quatro fluxos Electron de autenticação/segundo plano em Windows. Consulte seu resultado para confirmar a execução da versão. Não são testes de boot nem de congelamento real.
+Os testes incluem 14 C, 9 Python, 28 Node e 9 fluxos Electron (60 casos distintos). Além dos fluxos do perfil, verificam autenticação, conta principal protegida, gerenciamento de operadores, fechamento em segundo plano, reabertura pela segunda instância e diagnóstico/preservação de armazenamento ilegível. O workflow também executa os cinco fluxos Electron de autenticação/segundo plano em Windows e um teste do executável Windows empacotado, com o diretório padrão de dados em um runner descartável. Consulte seu resultado para confirmar a execução da versão. Não são testes de boot nem de congelamento real.
 
 ```sh
 make test-all                # C, Python e Node; requer dependências desktop

@@ -83,6 +83,37 @@ function checked(username: unknown, password: unknown) {
   return value.data;
 }
 
+function storageError(
+  error: unknown,
+  operation: "read" | "write",
+  filename: string,
+): AppError {
+  const raw = (error as NodeJS.ErrnoException | null)?.code;
+  const nativeCode =
+    typeof raw === "string" && /^[A-Z0-9_]{1,40}$/.test(raw) ? raw : "UNKNOWN";
+  const guidance =
+    nativeCode === "EACCES" || nativeCode === "EPERM"
+      ? "O Windows ou outro componente recusou o acesso. Verifique as permissões e o histórico de proteção do Windows para este caminho. Preserve o cadastro existente."
+      : nativeCode === "EISDIR" ||
+          nativeCode === "ENOTDIR" ||
+          nativeCode === "EEXIST"
+        ? "O caminho contém um arquivo ou uma pasta onde outro tipo era esperado. Preserve os itens existentes e envie este diagnóstico antes de alterar o cadastro."
+        : nativeCode === "EBUSY" || nativeCode === "ETXTBSY"
+          ? "O arquivo pode estar em uso ou bloqueado. Feche outras instâncias e tente novamente."
+          : nativeCode === "ENOSPC" || nativeCode === "EDQUOT"
+            ? "Não há espaço ou cota disponível para salvar os usuários. Libere espaço sem excluir o cadastro."
+            : nativeCode === "EROFS"
+              ? "O local dos dados está somente para leitura. Verifique a unidade e suas permissões."
+              : "Preserve os arquivos de usuários e envie este código e caminho para identificar a causa. A conta não será recriada automaticamente.";
+  return new AppError(
+    operation === "read" ? "ACCOUNTS_UNREADABLE" : "ACCOUNTS_WRITE_FAILED",
+    operation === "read"
+      ? "Não foi possível ler os usuários. O acesso permanece bloqueado."
+      : "Não foi possível salvar os usuários. O armazenamento não pôde ser acessado.",
+    { operation, nativeCode, path: filename, guidance },
+  );
+}
+
 export class AuthService {
   readonly filename: string;
   private marker: string;
@@ -114,19 +145,28 @@ export class AuthService {
     try {
       raw = await readFile(this.filename, "utf8");
     } catch (error) {
-      if ((error as NodeJS.ErrnoException).code !== "ENOENT")
-        throw new AppError(
-          "ACCOUNTS_UNREADABLE",
-          "Não foi possível ler os usuários. O acesso permanece bloqueado.",
-        );
+      if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
+        this.lock();
+        throw storageError(error, "read", this.filename);
+      }
       try {
         await access(this.marker);
       } catch (e) {
         if ((e as NodeJS.ErrnoException).code === "ENOENT") return null;
+        this.lock();
+        throw storageError(e, "read", this.marker);
       }
+      this.lock();
       throw new AppError(
         "ACCOUNTS_DAMAGED",
         "O cadastro de usuários está ausente após sua inicialização. O acesso permanece bloqueado.",
+        {
+          operation: "read",
+          nativeCode: "ENOENT",
+          path: this.filename,
+          guidance:
+            "A marca de inicialização ainda existe. Preserve os arquivos; não haverá novo cadastro automático sobre um administrador existente.",
+        },
       );
     }
     try {
@@ -137,14 +177,23 @@ export class AuthService {
       throw new AppError(
         "ACCOUNTS_DAMAGED",
         "O cadastro de usuários está inválido e foi preservado. O acesso permanece bloqueado.",
+        {
+          operation: "read",
+          nativeCode: "INVALID_FORMAT",
+          path: this.filename,
+          guidance:
+            "O conteúdo não corresponde ao cadastro esperado. Preserve o arquivo para diagnóstico ou restaure uma cópia válida. Não envie seu conteúdo pelo chat.",
+        },
       );
     }
   }
   private async save(db: Database) {
     const value = databaseSchema.parse(db);
-    await mkdir(this.directory, { recursive: true, mode: 0o700 });
     const temp = path.join(this.directory, `accounts.${randomUUID()}.tmp`);
+    let destination = this.directory;
     try {
+      await mkdir(this.directory, { recursive: true, mode: 0o700 });
+      destination = this.filename;
       const f = await open(temp, "wx", 0o600);
       try {
         await f.writeFile(JSON.stringify(value) + "\n");
@@ -153,12 +202,15 @@ export class AuthService {
         await f.close();
       }
       await rename(temp, this.filename);
+      destination = this.marker;
       const marker = await open(this.marker, "a", 0o600);
       try {
         await marker.sync();
       } finally {
         await marker.close();
       }
+    } catch (error) {
+      throw storageError(error, "write", destination);
     } finally {
       await unlink(temp).catch(() => undefined);
     }

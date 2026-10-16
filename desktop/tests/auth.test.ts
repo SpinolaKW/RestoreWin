@@ -1,6 +1,14 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtemp, readFile, rm, writeFile, unlink } from "node:fs/promises";
+import {
+  mkdtemp,
+  readFile,
+  rm,
+  writeFile,
+  unlink,
+  mkdir,
+  rename,
+} from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { AuthService } from "../src/main/auth";
@@ -183,4 +191,40 @@ test("damaged or deleted account storage fails closed and does not reopen first 
   await assert.rejects(fresh.setup("intruso", operatorPassword), {
     code: "ACCOUNTS_DAMAGED",
   });
+});
+
+test("an unreadable account path reports native code and path without replacing it or unlocking enrollment", async (t) => {
+  const f = await fixture(t);
+  await mkdir(f.auth.filename);
+  const check = (error: unknown) => {
+    const e = error as {
+      code: string;
+      storage: { nativeCode: string; path: string; operation: string };
+    };
+    assert.equal(e.code, "ACCOUNTS_UNREADABLE");
+    assert.match(e.storage.nativeCode, /^[A-Z0-9_]+$/);
+    assert.equal(e.storage.path, f.auth.filename);
+    assert.equal(e.storage.operation, "read");
+    assert.equal(JSON.stringify(e).includes(adminPassword), false);
+    return true;
+  };
+  await assert.rejects(f.auth.state(), check);
+  await assert.rejects(f.auth.setup("diretor", adminPassword), check);
+  await rm(f.auth.filename, { recursive: true });
+  assert.equal((await f.auth.state()).initialized, false);
+});
+test("a storage read failure revokes the previous session even after the file becomes readable again", async (t) => {
+  const f = await fixture(t);
+  await f.auth.setup("diretor", adminPassword);
+  const preserved = path.join(f.directory, "preserved-accounts.json");
+  await rename(f.auth.filename, preserved);
+  await mkdir(f.auth.filename);
+  await assert.rejects(f.auth.state(), { code: "ACCOUNTS_UNREADABLE" });
+  await rm(f.auth.filename, { recursive: true });
+  await rename(preserved, f.auth.filename);
+  assert.equal((await f.auth.state()).user, null);
+  assert.equal(
+    (await f.auth.login("diretor", adminPassword)).user?.role,
+    "admin",
+  );
 });

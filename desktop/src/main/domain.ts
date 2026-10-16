@@ -7,6 +7,7 @@ import type {
   Protection,
   Settings,
   Volume,
+  StorageDiagnostic,
 } from "../shared/contracts";
 import { ProfileSchema } from "../shared/schema";
 export { ProfileSchema, SettingsSchema } from "../shared/schema";
@@ -15,6 +16,7 @@ export class AppError extends Error {
   constructor(
     public code: string,
     message: string,
+    public storage?: StorageDiagnostic,
   ) {
     super(message);
   }

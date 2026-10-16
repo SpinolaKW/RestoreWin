@@ -27,7 +27,7 @@ function settings(): Settings {
 function preview(): Snapshot {
   return {
     mode: "preview",
-    appVersion: "0.2.0",
+    appVersion: "0.2.1",
     settings: settings(),
     computer: {
       platform: "linux",
