@@ -2,6 +2,8 @@
 
 Electron + React + TypeScript, com interface em português. A configuração funciona; a proteção física ainda não está implementada em nenhuma plataforma. Os pacotes são identificados como `RestoreWin-Interface`.
 
+Na versão 0.2.0, o primeiro acesso exige cadastro de administrador. A janela é bloqueada ao fechar e o processo permanece na bandeja. Consulte [contas e bandeja](../docs/contas-e-bandeja.md) para permissões, senhas, inicialização no login Windows e limites de segurança. Não existe usuário/senha padrão.
+
 ## Desenvolvimento
 
 ```sh
@@ -33,9 +35,9 @@ npm run build
 npm run test:ui
 ```
 
-Os 16 testes Node verificam caminhos Windows/Linux, unidades, persistência, revisões concorrentes, arquivos inválidos e recusa de ativação sem mecanismo real.
+Os 26 testes Node verificam caminhos Windows/Linux, unidades, persistência, revisões concorrentes, arquivos inválidos, recusa de ativação e dez cenários de autenticação e autorização.
 
-Os quatro testes Electron iniciam a aplicação compilada e usam IPC real. O seletor nativo é substituído no processo de teste por uma pasta temporária. Os testes verificam persistência ao fechar/reabrir, pastas, rascunhos, unidades desconectadas, controles indisponíveis e ausência de erros JavaScript no renderer.
+Os oito testes Electron iniciam a aplicação compilada e usam IPC real. O seletor nativo é substituído no processo de teste por uma pasta temporária. O tempo de inatividade do host é fixado somente no teste, e os eventos de bloqueio/suspensão são simulados sem suspender o runner. Os testes verificam os fluxos do perfil, criação do administrador, operadores, troca de senhas e acesso bloqueado. O fechamento oculta uma janela real, preserva seu processo e uma segunda instância real reabre a janela original.
 
 No contêiner, os testes usaram Xvfb com `DISPLAY=:93`. O runner Electron do Playwright adiciona `--no-sandbox` à sua instância de teste. Essa opção não foi adicionada ao aplicativo nem ao comando de produção. A janela de produção mantém sandbox, isolamento de contexto, Node desativado no renderer e CSP. A execução empacotada com sandbox precisa ser validada em cada distribuição. Não desativar a sandbox do produto para contornar requisitos de instalação.
 
@@ -58,14 +60,14 @@ ELECTRON_BUILDER_COMPRESSION_LEVEL=1 npx electron-builder --linux deb tar.gz \
 
 `--publish never` impede publicação. Resultados ficam em `release/`. O NSIS é um instalador assistido com escolha da pasta/unidade. O pacote portátil Linux permite escolher o local de extração; o `.deb` usa o destino definido pelo pacote. Nenhum pacote instala congelamento. Um build Windows não equivale a execução testada no Windows e não recebe assinatura de produção sem uma configuração legítima de assinatura.
 
-Nesta instância, o ZIP Windows foi gerado como alternativa portátil da interface. Extraia **todos** os arquivos na pasta/unidade escolhida e execute `RestoreWin.exe`. Não mova somente o EXE, pois ele depende dos demais arquivos. O instalador NSIS assistido não foi concluído: sua geração precisa executar um helper Windows e o Wine disponível neste contêiner não inicializou corretamente. O projeto mantém sua configuração para um build em Windows ou em um ambiente de cross-build apropriado.
+O workflow GitHub Actions gera o ZIP e o instalador NSIS em um runner Windows, e os pacotes Linux em Ubuntu. No ZIP, extraia **todos** os arquivos na pasta/unidade escolhida e execute `RestoreWin.exe`. Não mova somente o EXE, pois ele depende dos demais arquivos. No contêiner Linux de desenvolvimento, uma tentativa anterior de cross-build NSIS não concluiu porque o helper Wine não inicializou; a publicação usa Windows nativo para essa etapa.
 
 O empacotamento portátil foi executado com o comando abaixo, preservando o download e a verificação normais do Electron:
 
 ```sh
 npx electron-builder --win zip --x64 --publish never \
   --config.electronDownload.cache=/workspace/.cache/electron \
-  --config.win.artifactName=RestoreWin-Interface-0.1.0-win-x64.zip
+  --config.win.artifactName=RestoreWin-Interface-0.2.0-win-x64.zip
 ```
 
 A consulta de acesso a volumes no Windows mantém estado desconhecido quando não consegue confirmar leitura/gravação. O aplicativo não declara esses volumes graváveis por padrão e impede selecioná-los enquanto o diagnóstico permanecer desconhecido. A execução nativa dessa consulta ainda requer validação em Windows.
@@ -73,7 +75,7 @@ A consulta de acesso a volumes no Windows mantém estado desconhecido quando nã
 ## Limites da ponte desktop
 
 - O renderer não possui Node.js nem acesso a comandos do sistema.
-- A ponte expõe diagnóstico, salvar perfil, escolher pasta e uma ação de proteção tipada.
+- A ponte expõe autenticação, usuários, bandeja/inicialização, diagnóstico, salvar perfil, escolher pasta e uma ação de proteção tipada. As operações são autorizadas no processo principal antes de acessar os serviços.
 - O processo principal valida os dados antes de persistir.
 - `freeze` e `thaw` retornam `BACKEND_UNAVAILABLE`; não há alteração visual fictícia para Congelado.
 - A configuração não possui campo que possa declarar a máquina congelada.

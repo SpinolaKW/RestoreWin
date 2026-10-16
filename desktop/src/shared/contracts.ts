@@ -1,6 +1,6 @@
 export type Platform = "windows" | "linux" | "unsupported";
 export type Screen =
-  "overview" | "folders" | "volumes" | "maintenance" | "activity";
+  "overview" | "folders" | "volumes" | "maintenance" | "activity" | "users";
 export type ProtectionPhase =
   | "unavailable"
   | "thawed"
@@ -71,7 +71,38 @@ export interface Failure {
   message: string;
 }
 export type Result<T> = { ok: true; value: T } | Failure;
+export interface User {
+  id: string;
+  username: string;
+  role: "admin" | "operator";
+}
+export interface AuthState {
+  mode: "desktop" | "preview";
+  initialized: boolean;
+  user: User | null;
+}
+export interface RuntimeState {
+  trayAvailable: boolean;
+  autoStartSupported: boolean;
+  autoStart: boolean;
+}
 export interface Bridge {
+  authState(): Promise<Result<AuthState>>;
+  setup(username: string, password: string): Promise<Result<AuthState>>;
+  login(username: string, password: string): Promise<Result<AuthState>>;
+  lock(): Promise<Result<AuthState>>;
+  onLocked(listener: () => void): () => void;
+  users(): Promise<Result<User[]>>;
+  createUser(username: string, password: string): Promise<Result<User[]>>;
+  changePassword(
+    id: string,
+    password: string,
+    currentPassword: string,
+  ): Promise<Result<AuthState>>;
+  deleteUser(id: string): Promise<Result<User[]>>;
+  runtime(): Promise<Result<RuntimeState>>;
+  setAutoStart(enabled: boolean): Promise<Result<RuntimeState>>;
+  quit(): Promise<Result<null>>;
   snapshot(): Promise<Result<Snapshot>>;
   saveProfile(
     profile: Profile,

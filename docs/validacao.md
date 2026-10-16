@@ -1,5 +1,13 @@
 # Validação executada
 
+## Versão 0.2.0: contas e bandeja
+
+O conjunto atual tem 14 casos C, 9 Python, 26 Node e 8 Electron (57 distintos). Os testes de contas verificam primeira inicialização única, persistência sem sessão persistida, hashes/salts, privilégios do administrador, proteção da conta principal, alteração de senha, exclusão de operadores, limite persistente de tentativas e bloqueio concorrente com login. Os testes da interface verificam autorização via IPC, cadastro/login, gerenciamento de usuários, troca da senha principal e novo login.
+
+O fluxo de segundo plano fecha uma janela Electron real, verifica que ela ficou oculta e que o processo permanece vivo, lança uma segunda instância pelo executável e verifica a reabertura do mesmo processo com login exigido. A inatividade do host é substituída no processo de teste porque os runners podem ficar sem entrada do sistema operacional; os eventos de bloqueio de tela e suspensão são emitidos em teste. Não há suspensão real, verificação manual da bandeja Windows ou execução de registro de inicialização automática nesta validação local.
+
+O workflow da versão 0.2.0 exige os 26 testes Node em Windows e Linux, oito fluxos Electron em Linux e quatro fluxos de autenticação/segundo plano em Windows antes de publicar. Consulte o resultado da execução da tag para verificar a validação remota. Os resultados abaixo relativos à versão 0.1.0 são históricos. Nenhum desses conjuntos valida boot ou congelamento físico.
+
 Ambiente: Linux x64, GCC 14.2.0 e Python 3.12.14. Não há Windows/WDK nem testes de boot neste resultado.
 
 ## Núcleo em imagens

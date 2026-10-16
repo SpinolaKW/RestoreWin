@@ -15,6 +15,170 @@
   --border: #e5eaf0;
   --muted: #788597;
 }
+.access-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(280px, 36%) 1fr;
+}
+.access-brand {
+  background: #132d38;
+  color: #d3eee5;
+  padding: 64px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.access-brand h1 {
+  font-size: 38px;
+  color: white;
+}
+.access-brand > div {
+  margin: auto 0;
+  padding: 30px 0;
+}
+.access-brand strong {
+  display: block;
+  margin: 18px 0;
+  color: white;
+}
+.access-brand p {
+  line-height: 1.9;
+  color: #a4bdbe;
+}
+.access-brand small {
+  color: #a4bdbe;
+}
+.access-content {
+  display: grid;
+  place-items: center;
+  padding: 36px;
+}
+.access-card {
+  width: 100%;
+  max-width: 540px;
+  background: white;
+  padding: 36px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: 0 12px 50px #142b3610;
+}
+.access-card h1 {
+  font-size: 26px;
+  margin: 22px 0 12px;
+}
+.access-card > p,
+.users-area .panel > p {
+  color: #6b7e8a;
+  margin: 12px 0 22px;
+}
+.access-card form,
+.user-form {
+  display: grid;
+  gap: 18px;
+}
+.access-card label,
+.user-form label {
+  display: grid;
+  gap: 7px;
+  font-weight: 550;
+}
+.access-card input:not([type="checkbox"]),
+.user-form input {
+  width: 100%;
+  padding: 11px 13px;
+  border: 1px solid #cdd9df;
+  border-radius: 7px;
+  color: #263f4a;
+  background: #fbfcfd;
+}
+.access-card small,
+.users-area small {
+  color: #6b7e8a;
+  line-height: 1.7;
+}
+.password-warning {
+  background: #fff9ef;
+  color: #715c39;
+  border: 1px solid #eddab6;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 14px 0;
+  font-size: 12px;
+  line-height: 1.8;
+}
+.password-warning p {
+  margin: 8px 0 12px;
+}
+.check-label {
+  display: flex !important;
+  align-items: flex-start;
+  gap: 10px !important;
+  font-size: 12px;
+}
+.check-label input {
+  width: 16px;
+  height: 16px;
+  margin: 3px 0;
+  flex-shrink: 0;
+}
+.users-area {
+  display: grid;
+  gap: 22px;
+}
+.users-area .panel {
+  padding: 26px;
+}
+.users-area .panel-heading {
+  padding: 0 0 12px;
+}
+.users-area .panel-heading p {
+  max-width: 600px;
+}
+.users-area .panel-heading .button {
+  flex-shrink: 0;
+}
+.user-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--border);
+}
+.user-row small {
+  display: block;
+  margin-top: 6px;
+}
+.user-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.user-form {
+  max-width: 540px;
+  margin-top: 20px;
+}
+.button.danger {
+  background: #a82f37;
+  color: white;
+  border: 1px solid #a82f37;
+}
+@media (max-width: 1050px) {
+  .access-brand {
+    padding: 36px 26px;
+  }
+  .access-content {
+    padding: 24px;
+  }
+  .access-card {
+    padding: 24px;
+  }
+  .user-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
 * {
   box-sizing: border-box;
 }

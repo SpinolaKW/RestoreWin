@@ -27,9 +27,11 @@ import {
   UnlockKeyhole,
   Wrench,
   X,
+  Users,
 } from "lucide-react";
-import type { Profile, Screen, Snapshot } from "../shared/contracts";
+import type { Profile, Screen, Snapshot, User } from "../shared/contracts";
 import { bridge } from "./bridge";
+import { UsersPanel } from "./UsersPanel";
 
 const nav = [
   { id: "overview", label: "Visão geral", icon: LayoutDashboard },
@@ -44,6 +46,7 @@ const titles: Record<Screen, string> = {
   volumes: "Discos e instalação",
   maintenance: "Manutenção",
   activity: "Atividade",
+  users: "Usuários e acesso",
 };
 
 function bytes(n: number) {
@@ -92,7 +95,13 @@ function Modal({
   );
 }
 
-export function App() {
+export function App({
+  user,
+  onLock,
+}: {
+  user: User | null;
+  onLock: () => void;
+}) {
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [draft, setDraft] = useState<Profile | null>(null);
   const [screen, setScreen] = useState<Screen>("overview");
@@ -320,8 +329,23 @@ export function App() {
               )}
             </button>
           ))}
+          {user?.role === "admin" && (
+            <button
+              className={`nav-item ${screen === "users" ? "selected" : ""}`}
+              onClick={() => setScreen("users")}
+            >
+              <Users size={19} />
+              <span>Usuários e acesso</span>
+            </button>
+          )}
         </nav>
         <div className="sidebar-bottom">
+          {user && (
+            <button className="nav-item" onClick={onLock}>
+              <LockKeyhole size={19} />
+              <span>Bloquear acesso · {user.username}</span>
+            </button>
+          )}
           <div className="edition-tag">
             <span className="status-dot" /> Edição em desenvolvimento
           </div>
@@ -330,7 +354,7 @@ export function App() {
             <span>Sobre e compatibilidade</span>
           </button>
           <div className="sidebar-version">
-            RestoreWin <span>v{snapshot?.appVersion ?? "0.1.0"}</span>
+            RestoreWin <span>v{snapshot?.appVersion ?? "0.2.0"}</span>
           </div>
         </div>
       </aside>
@@ -368,7 +392,9 @@ export function App() {
                       ? "Defina as unidades e conheça o local de instalação do aplicativo."
                       : screen === "maintenance"
                         ? "Planeje atualizações sem perder as alterações que deseja manter."
-                        : "Acompanhe as configurações salvas e os estados confirmados."}
+                        : screen === "users"
+                          ? "Gerencie usuários, senhas e a execução em segundo plano."
+                          : "Acompanhe as configurações salvas e os estados confirmados."}
               </p>
             </div>
             <button
@@ -427,6 +453,9 @@ export function App() {
                   desativar a proteção ainda não está disponível.
                 </span>
               </div>
+              {screen === "users" && user?.role === "admin" && (
+                <UsersPanel current={user} />
+              )}
               {screen === "overview" && (
                 <>
                   <section
@@ -1094,7 +1123,7 @@ export function App() {
         <div className="about-logo">
           <Snowflake size={36} />
           <strong>RestoreWin</strong>
-          <span>0.1.0 · desenvolvimento</span>
+          <span>{snapshot?.appVersion ?? "0.2.0"} · desenvolvimento</span>
         </div>
         <p className="modal-copy">
           Uma implementação própria para restaurar a instalação física do

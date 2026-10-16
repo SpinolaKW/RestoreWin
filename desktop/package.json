@@ -1,6 +1,6 @@
 {
   "name": "restorewin-desktop",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "Interface experimental de congelamento e manutenção do RestoreWin",
   "type": "module",
@@ -25,6 +25,7 @@
     "files": [
       "build/**",
       "dist/**",
+      "assets/**",
       "package.json"
     ],
     "asar": true,

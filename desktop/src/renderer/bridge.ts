@@ -27,7 +27,7 @@ function settings(): Settings {
 function preview(): Snapshot {
   return {
     mode: "preview",
-    appVersion: "0.1.0",
+    appVersion: "0.2.0",
     settings: settings(),
     computer: {
       platform: "linux",
@@ -72,6 +72,50 @@ function preview(): Snapshot {
   };
 }
 const browser: Bridge = {
+  async authState() {
+    return {
+      ok: true,
+      value: { mode: "preview", initialized: false, user: null },
+    };
+  },
+  async setup() {
+    return previewAuthUnavailable();
+  },
+  async login() {
+    return previewAuthUnavailable();
+  },
+  async lock() {
+    return previewAuthUnavailable();
+  },
+  onLocked: () => () => {},
+  async users() {
+    return previewAuthUnavailable();
+  },
+  async createUser() {
+    return previewAuthUnavailable();
+  },
+  async changePassword() {
+    return previewAuthUnavailable();
+  },
+  async deleteUser() {
+    return previewAuthUnavailable();
+  },
+  async runtime() {
+    return {
+      ok: true,
+      value: {
+        trayAvailable: false,
+        autoStart: false,
+        autoStartSupported: false,
+      },
+    };
+  },
+  async setAutoStart() {
+    return previewAuthUnavailable();
+  },
+  async quit() {
+    return previewAuthUnavailable();
+  },
   async snapshot() {
     try {
       return { ok: true, value: preview() };
@@ -132,3 +176,15 @@ const browser: Bridge = {
   },
 };
 export const bridge: Bridge = window.restorewin ?? browser;
+function previewAuthUnavailable(): {
+  ok: false;
+  code: string;
+  message: string;
+} {
+  return {
+    ok: false,
+    code: "DESKTOP_REQUIRED",
+    message:
+      "Use o aplicativo instalado para gerenciar contas. A prévia não armazena senhas.",
+  };
+}
