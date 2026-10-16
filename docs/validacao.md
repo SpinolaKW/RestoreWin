@@ -6,6 +6,8 @@
 
 O [workflow do núcleo](https://github.com/SpinolaKW/RestoreWin/actions/workflows/core.yml) exige esses testes no Linux e compilação MSVC com AddressSanitizer, 25 grupos em memória e análise estática no Windows. Os dois testes de arquivo POSIX ficam explicitamente excluídos do alvo Windows. Consulte a execução correspondente para confirmar o resultado remoto; um teste C em modo usuário no Windows Server não valida WDK, driver, Windows Home/Pro ou congelamento físico.
 
+A [execução 38930755351](https://github.com/SpinolaKW/RestoreWin/actions/runs/38930755351), do commit `670ef0c`, concluiu com sucesso nos dois jobs: Linux (ASan/UBSan e objeto freestanding) e Windows (25 grupos em memória com MSVC/ASan e análise estática). Não houve instalação de driver, reinicialização ou alteração de políticas.
+
 ## Versão 0.2.1: diagnóstico de armazenamento
 
 O conjunto atual tem 14 casos C, 9 Python, 28 Node e 9 Electron (60 distintos). Os novos casos reproduzem erro de leitura antes do cadastro, verificam código/caminho no IPC e na tela, preservação do administrador e revogação da sessão após falha de leitura. Uma causa específica no computador do usuário não foi confirmada só pela captura de tela.
