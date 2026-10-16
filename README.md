@@ -55,9 +55,9 @@ Consulte [desenvolvimento e pacotes da interface](desktop/README.md) e [requisit
 make test
 ```
 
-Requisitos de teste: Python 3.10+, Make e compilador GCC/Clang com AddressSanitizer/UndefinedBehaviorSanitizer. O teste com arquivos temporários utiliza APIs POSIX e foi executado no Linux; não é um teste do Windows. Há 14 testes do núcleo e 9 do verificador PE.
+Requisitos de teste: Python 3.10+, Make e compilador GCC/Clang com AddressSanitizer/UndefinedBehaviorSanitizer. Os testes com arquivos temporários utilizam APIs POSIX; não são testes de boot do Windows. Há 27 grupos de testes do núcleo e 9 do verificador PE. O workflow separado compila com MSVC e executa no Windows os 25 grupos em memória, excluindo explicitamente os dois casos POSIX.
 
-As falhas de I/O desativam o contexto em memória. Um journal incompleto ou danificado impede a abertura; não há retorno silencioso à base nem reparo automático. Isso preserva a distinção entre dados verificados e desconhecidos, mas **não resolve ainda a disponibilidade após uma interrupção real de energia**. A recuperação de metadados é um requisito pendente antes de qualquer driver de boot. Um write que retornou erro pode ter sido inteiramente persistido; os testes contemplam esse resultado incerto.
+As falhas de I/O desativam o contexto em memória. Um journal incompleto ou danificado impede a abertura; não há retorno silencioso à base nem reparo automático. A [v2 experimental](docs/formato-overlay-v2.md) grava cópias redundantes e permite recuperação offline para uma imagem nova, preservando a origem. Os testes incluem cortes por byte, corrupção e falhas de flush. Isso ainda não comprova disponibilidade após queda real de energia nem recuperação de boot do Windows. Um write que retornou erro pode ter sido inteiramente persistido; os testes contemplam esse resultado incerto.
 
 Não há reset de uma imagem montada. O teste de retorno à base fecha o contexto e abre um overlay novo, mantendo o anterior intacto. Consulte [a arquitetura e os bloqueios para uma versão instalável](docs/arquitetura.md) e [o formato experimental](docs/formato-overlay.md).
 

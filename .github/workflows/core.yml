@@ -1,0 +1,47 @@
+name: Nucleo experimental em imagens
+on:
+  push:
+    branches: [main]
+    paths:
+      - core/**
+      - tests/core_tests.c
+      - tests/test_driver_images.py
+      - tools/check_driver_images.py
+      - Makefile
+      - .github/workflows/core.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  linux:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Testes C com ASan/UBSan e verificador PE
+        run: make test
+      - name: Objeto sem dependencias externas
+        run: |
+          cc -std=c11 -ffreestanding -fno-builtin -Wall -Wextra -Werror -c core/restorewin.c -o artifacts/restorewin_core.o
+          test -z "$(nm -u artifacts/restorewin_core.o)"
+  windows-user-mode:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Compilar MSVC e testar em memoria com AddressSanitizer
+        shell: cmd
+        run: |
+          for /f "usebackq tokens=*" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do call "%%i\VC\Auxiliary\Build\vcvars64.bat"
+          if errorlevel 1 exit /b 1
+          if not exist artifacts mkdir artifacts
+          cl /nologo /std:c11 /W4 /WX /Od /Zi /fsanitize=address /Icore core\restorewin.c tests\core_tests.c /Foartifacts\ /Feartifacts\core-tests-win.exe /link /INCREMENTAL:NO
+          if errorlevel 1 exit /b 1
+          artifacts\core-tests-win.exe
+          if errorlevel 1 exit /b 1
+          cl /nologo /std:c11 /W4 /WX /analyze /c core\restorewin.c /Foartifacts\core-analyzed.obj
+          if errorlevel 1 exit /b 1

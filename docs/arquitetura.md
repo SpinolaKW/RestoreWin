@@ -12,13 +12,14 @@ Não há promessa de ausência absoluta de falhas. O critério para distribuir u
 - Leitura combinada, replay, checksums, limites e invalidação do contexto após erro de I/O.
 - Testes de blocos de 512/4096 bytes, reabertura, sobrescrita de um bloco, base intacta, falta de capacidade, corrupção, escrita parcial e falha de flush.
 - Abertura de um overlay novo com a imagem offline para demonstrar retorno à base.
+- Formato experimental v2 com cópias redundantes e recuperação offline para outra imagem vazia; a origem é preservada. Consulte [protocolo, modelo de falhas e limites](formato-overlay-v2.md).
 - Verificador estático de propriedades PE relevantes para desenvolvimento de drivers HVCI.
 
 Os testes usam memória com injeção de falhas e arquivos temporários no Linux. Não exercitam Windows, NTFS, drivers ou inicialização.
 
 ## Não implementado
 
-1. **Recuperação durável de metadados.** O núcleo detecta registros incompletos, mas não os recupera automaticamente. Um protocolo de commit redundante, testes de crash em cada etapa e recuperação offline são pré-requisitos para o filtro de boot.
+1. **Recuperação durável de metadados.** A v2 implementa recuperação explícita de imagens com cópias redundantes e cortes de gravação testados sob contrato de flush/tamanho durável. A v1 continua recusando caudas incompletas. Ainda faltam recuperação integrada ao boot, seleção transacional do overlay e validação do contrato em dispositivos reais; a função de exportação offline não substitui esses componentes.
 2. **Índice de produção.** O mapa simples por bloco e o flush síncrono por gravação não são adequados ao tamanho/desempenho de um disco de sistema. Precisam ser substituídos e medidos antes de integração.
 3. **Driver de armazenamento.** É necessário um componente Windows, usando interfaces suportadas e memória NX, que preserve ordenação, barreiras, cancelamento, PnP, power management, paginação e erros. Nenhum driver ou INF é fornecido neste estado.
 4. **Local do overlay.** Um arquivo comum no próprio volume protegido pode causar recursão de I/O e dependência circular durante o boot. É necessário projetar e validar armazenamento independente/acessível nessa fase, geometria, capacidade reservada e identidade da base. O protótipo não decide esses aspectos para o PC do usuário.
@@ -45,7 +46,7 @@ O ambiente atual é Linux x64: não há WDK/SDK Windows preparado nem uma instâ
 
 | Etapa | Evidência exigida | Estado |
 | --- | --- | --- |
-| Núcleo em imagens | Testes de leitura/escrita e falhas, sanitizers | Parcial: protótipo verificado; recuperação durável e escala pendentes |
+| Núcleo em imagens | Testes de leitura/escrita e falhas, sanitizers | Parcial: v2 com recuperação offline testada; boot, contrato em dispositivos e escala pendentes |
 | Compilação de driver | WDK/SDK fixados, análise estática e build reproduzível | Não executada; driver não implementado |
 | Integridade do driver | HVCI, Driver Verifier/HLK e assinatura aceita | Não executada |
 | Ciclo funcional | Instalar, criar base, gravar, reiniciar e comparar dados | Não executado |

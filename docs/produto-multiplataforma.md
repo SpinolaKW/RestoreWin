@@ -31,6 +31,8 @@ No Linux, uma arquitetura possível é uma raiz efêmera com OverlayFS e diretó
 
 Home/Pro exigem uma solução própria: UWF não é um recurso universal nessas edições. Um adaptador UWF poderá ser considerado futuramente para edições que o suportem. O driver próprio não foi implementado.
 
+A prioridade Windows confirmada é **Home/Pro**. O desenvolvimento segue pelo mecanismo próprio, começando pelo [journal redundante e recuperação offline em imagens](formato-overlay-v2.md). O usuário dispõe de PC de laboratório reinstalável; ele ainda não foi acessado nem usado nos testes. Windows 10/11 x64 são os alvos iniciais, sem promessa de compatibilidade independente de todas as builds. A interface existente não habilita congelamento com este avanço.
+
 Ubuntu/Debian exigem validação de kernels, initramfs, criptografia, filesystem e carregador. A presença de OverlayFS não conclui a proteção da raiz. Outras distribuições precisam de adaptadores/testes próprios.
 
 O local da interface é independente dos volumes protegidos e do armazenamento da proteção. O instalador Windows permite escolher a pasta/unidade; componentes de boot/driver precisarão dos locais exigidos pelo sistema. O pacote portátil Linux pode ser extraído no local escolhido; o `.deb` usa o destino de sistema. A escolha do local não prova que um futuro overlay estará acessível no boot.

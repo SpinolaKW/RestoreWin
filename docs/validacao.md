@@ -1,5 +1,11 @@
 # Validação executada
 
+## Núcleo v2: prioridade Windows Home/Pro
+
+`make test` passou com 27 grupos C (14 v1 preservados, 13 v2 novos), AddressSanitizer/UndefinedBehaviorSanitizer e nove testes Python. A compilação freestanding com `-fno-builtin` passou e `nm -u` não listou símbolos externos. O [formato v2](formato-overlay-v2.md) documenta o modelo de falhas e os milhares de cortes de gravação exercitados. Não foram executados testes de boot ou hardware físico.
+
+O [workflow do núcleo](https://github.com/SpinolaKW/RestoreWin/actions/workflows/core.yml) exige esses testes no Linux e compilação MSVC com AddressSanitizer, 25 grupos em memória e análise estática no Windows. Os dois testes de arquivo POSIX ficam explicitamente excluídos do alvo Windows. Consulte a execução correspondente para confirmar o resultado remoto; um teste C em modo usuário no Windows Server não valida WDK, driver, Windows Home/Pro ou congelamento físico.
+
 ## Versão 0.2.1: diagnóstico de armazenamento
 
 O conjunto atual tem 14 casos C, 9 Python, 28 Node e 9 Electron (60 distintos). Os novos casos reproduzem erro de leitura antes do cadastro, verificam código/caminho no IPC e na tela, preservação do administrador e revogação da sessão após falha de leitura. Uma causa específica no computador do usuário não foi confirmada só pela captura de tela.
@@ -57,7 +63,7 @@ O ZIP Windows foi conferido como arquivo, incluindo integridade ZIP, runtime AMD
 ## Não validado e não fornecido como proteção
 
 - Driver Windows, INF, instalador ou serviço de proteção.
-- Protocolo de recuperação automática de registros interrompidos.
+- Recuperação automática de registros interrompidos integrada ao boot. A v2 oferece somente recuperação explícita de imagens offline para um novo destino, sob o modelo de falhas documentado.
 - Desempenho e uso de memória adequados a discos reais.
 - Assinatura de produção, HVCI/HLK em execução, NTFS, BitLocker, boot, Windows Update e desinstalação.
 - Hardware físico ou Windows 11 25H2 em VM.
